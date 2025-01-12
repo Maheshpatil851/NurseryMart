@@ -2,8 +2,11 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MongoDB.Driver;
+using NurseryMart.IRepository;
 using NurseryMart.MiddleWares;
 using NurseryMart.Repositories;
+using NurseryMart.Services.Abstraction;
+using NurseryMart.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +33,8 @@ builder.Services.AddTransient<SqlConnectionFactory>();
 //    var mongoClient = new MongoClient(connectionString);
 //    return mongoClient.GetDatabase(builder.Configuration["Databases:MongoDb"]);
 //});
+builder.Services.AddSingleton<IServiceManager, ServiceManager>();
+builder.Services.AddSingleton<IRepositoryManager, RepositoryManager>();
 
 var app = builder.Build();
 
