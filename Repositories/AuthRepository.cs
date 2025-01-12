@@ -13,14 +13,14 @@ namespace NurseryMart.Repositories
             //_auth = connectionFactory.GetCollection<Authorize>(typeof(Authorize).Name.ToSlugCase());
         }
 
-        // Here, you can implement any custom methods related to Authorize,
+        // Here, i have to implement any custom methods related to Authorize,
         // or simply use the base repository methods like CreateOneAsync, DeleteOneAsync, etc.
 
         // Example: Custom method to get an Authorize by Mobile
-        public async Task<Authorize> GetAuthorizeByMobileAsync(string mobile)
-        {
-            var filter = (Authorize a) => a.Mobile == mobile;
-            return await FindOneAsync(filter);
-        }
+        //public async Task<Authorize> GetAuthorizeByMobileAsync(string mobile)
+        //{
+        //    var filter = (Authorize a) => a.Mobile == mobile;
+        //    return await FindOneAsync(filter);
+        //}
     }
 }

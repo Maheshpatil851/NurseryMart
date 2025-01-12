@@ -1,11 +1,14 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using NurseryMart.IRepository;
 
 namespace NurseryMart.Entities
 {
     public class Authorize : IEntity
     {
-
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { set; get; }
         [BsonElement("mobile")]
         public string Mobile { set; get; }
         [BsonElement("profile")]
