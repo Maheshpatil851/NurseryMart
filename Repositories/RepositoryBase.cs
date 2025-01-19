@@ -3,219 +3,99 @@ using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using NurseryMart.Contract;
 using NurseryMart.IRepository;
 using NurseryMart.Utility;
 
 namespace NurseryMart.Repositories
 {
-    public class RepositoryBase<T> where T : IEntity
-    {
-        private readonly SqlConnectionFactory _connectionFactory;
-
-        // Constructor for dependency injection (passing the connection factory)
-        public RepositoryBase(SqlConnectionFactory connectionFactory)
+        public class RepositoryBase<T> : IBase<T> where T : class
         {
-            _connectionFactory = connectionFactory;
-        }
+            private readonly DbContext _context;
+            private readonly DbSet<T> _dbSet;
 
-        // Count: Get count of records matching a filter.
-        public async Task<long> CountAsync(Expression<Func<T, bool>> filter)
-        {
-            using (var connection = _connectionFactory.CreateConnection())
+            public RepositoryBase(DbContext context)
             {
-                var query = "SELECT COUNT(*) FROM " + typeof(T).Name.ToSlugCase() + " WHERE " + GetSqlWhereClause(filter);
-
-                await connection.OpenAsync();
-                using (var command = new SqlCommand(query, connection))
-                {
-                    return (long)await command.ExecuteScalarAsync(); // Returns the count.
-                }
+                _context = context;
+                _dbSet = context.Set<T>();
             }
-        }
 
-        // CreateOne: Insert a single entity into the database.
-        public async Task CreateOneAsync(T entity)
-        {
-            using (var connection = _connectionFactory.CreateConnection())
+            public async Task<T> FindOneAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
             {
-                var query = "INSERT INTO " + typeof(T).Name.ToSlugCase() + " (columns...) VALUES (@values...)";
-                await connection.OpenAsync();
-
-                using (var command = new SqlCommand(query, connection))
-                {
-                    AddParameters(command, entity); // Method to map entity properties to SQL parameters.
-                    await command.ExecuteNonQueryAsync();
-                }
+                return await _dbSet.FirstOrDefaultAsync(filter, cancellationToken);
             }
-        }
 
-        // CreateMany: Insert multiple entities.
-        public async Task CreateManyAsync(IEnumerable<T> entities)
-        {
-            using (var connection = _connectionFactory.CreateConnection())
+            public async Task<IEnumerable<T>> FindManyAsync(Pagination pagination, Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
             {
-                var query = "INSERT INTO " + typeof(T).Name.ToSlugCase() + " (columns...) VALUES (@values...)";
-                await connection.OpenAsync();
-
-                using (var command = new SqlCommand(query, connection))
+                IQueryable<T> query = _dbSet.AsQueryable();
+                if (filter != null)
                 {
-                    foreach (var entity in entities)
+                    query = query.Where(filter);
+                }
+
+                // Apply pagination if SkipPagination is false
+                if (!pagination.SkipPagination)
+                {
+                    query = query.Skip((pagination.PageNumber - 1) * pagination.PageSize)
+                                 .Take(pagination.PageSize);
+                }
+
+                // Apply sorting if necessary (you can extend this further for more complex sorting logic)
+                if (!string.IsNullOrEmpty(pagination.SortColumn))
+                {
+                    if (pagination.SortDesc)
                     {
-                        AddParameters(command, entity);
-                        await command.ExecuteNonQueryAsync(); // Insert each entity
+                        query = query.OrderByDescending(x => EF.Property<object>(x, pagination.SortColumn));
                     }
-                }
-            }
-        }
-
-        // DeleteOne: Delete a single record by a filter.
-        public async Task<bool> DeleteOneAsync(Expression<Func<T, bool>> filter)
-        {
-            using (var connection = _connectionFactory.CreateConnection())
-            {
-                var query = "DELETE FROM " + typeof(T).Name.ToSlugCase() + " WHERE " + GetSqlWhereClause(filter);
-                await connection.OpenAsync();
-
-                using (var command = new SqlCommand(query, connection))
-                {
-                    return await command.ExecuteNonQueryAsync() > 0; // Returns true if any row was deleted.
-                }
-            }
-        }
-
-        // UpdateOne: Update a single entity by a filter.
-        public async Task<bool> UpdateOneAsync(Expression<Func<T, bool>> filter, T entity)
-        {
-            using (var connection = _connectionFactory.CreateConnection())
-            {
-                var query = "UPDATE " + typeof(T).Name.ToSlugCase() + " SET columns... WHERE " + GetSqlWhereClause(filter);
-                await connection.OpenAsync();
-
-                using (var command = new SqlCommand(query, connection))
-                {
-                    AddParameters(command, entity);
-                    return await command.ExecuteNonQueryAsync() > 0; // Returns true if any row was updated.
-                }
-            }
-        }
-
-        // FindOne: Find a single record by a filter.
-        public async Task<T> FindOneAsync(Expression<Func<T, bool>> filter)
-        {
-            using (var connection = _connectionFactory.CreateConnection())
-            {
-                var query = "SELECT * FROM " + typeof(T).Name.ToSlugCase() + " WHERE " + GetSqlWhereClause(filter);
-                await connection.OpenAsync();
-
-                using (var command = new SqlCommand(query, connection))
-                {
-                    using (var reader = await command.ExecuteReaderAsync())
+                    else
                     {
-                        if (await reader.ReadAsync())
-                        {
-                            return MapReaderToEntity(reader); // Map the reader data to the entity object.
-                        }
+                        query = query.OrderBy(x => EF.Property<object>(x, pagination.SortColumn));
                     }
                 }
 
-                return default(T); // Return default if no record is found.
+                return await query.ToListAsync(cancellationToken);
             }
-        }
 
-        // GetSqlWhereClause: Convert a LINQ Expression (filter) to an SQL WHERE clause.
-        private string GetSqlWhereClause(Expression<Func<T, bool>> filter)
-        {
-            // We use expression trees to parse the expression and convert it to SQL format.
-            var body = filter.Body as BinaryExpression;
-
-            if (body == null)
-                throw new ArgumentException("Filter expression should be a binary expression.");
-
-            var left = body.Left as MemberExpression;
-            var right = body.Right as ConstantExpression;
-
-            if (left == null || right == null)
-                throw new ArgumentException("Only equality expressions are supported for this method.");
-
-            // Here, we assume a simple equality check (e.g., `a.Property == value`)
-            var columnName = left.Member.Name;
-            var columnValue = right.Value;
-
-            // Return SQL WHERE clause (simple equality).
-            return $"{columnName} = @{columnName}";
-        }
-
-        // AddParameters: Add parameters to the SqlCommand object based on the entity.
-        private void AddParameters(SqlCommand command, T entity)
-        {
-            // Get all public properties of the entity type (T)
-            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-            foreach (var property in properties)
+            // UpdateOneAsync - Update a single entity
+            public async Task<bool> UpdateOneAsync(T entity, CancellationToken cancellationToken)
             {
-                var value = property.GetValue(entity);
-
-                // Avoid adding null values
-                if (value != null)
-                {
-                    command.Parameters.Add(new SqlParameter($"@{property.Name}", value ?? DBNull.Value));
-                }
+                _dbSet.Update(entity);
+                return await _context.SaveChangesAsync(cancellationToken) > 0;
             }
-        }
 
-        // MapReaderToEntity: Convert a SqlDataReader row to an instance of the entity type.
-        private T MapReaderToEntity(SqlDataReader reader)
-        {
-            // Create a new instance of the entity (T)
-            var entity = Activator.CreateInstance<T>();
-
-            // Loop through all properties of the entity
-            foreach (var property in typeof(T).GetProperties())
+            // UpdateManyAsync - Update multiple entities
+            public async Task<bool> UpdateManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken)
             {
-                // Make sure the property can be set (it must have a setter)
-                if (property.CanWrite)
-                {
-                    // Get the value from the reader based on the column name
-                    var value = reader[property.Name];
-
-                    // If the value is not DBNull, set it to the entity property
-                    if (value != DBNull.Value)
-                    {
-                        property.SetValue(entity, value);
-                    }
-                }
+                _dbSet.UpdateRange(entities);
+                return await _context.SaveChangesAsync(cancellationToken) > 0;
             }
 
-            return entity;
+            // CountAsync - Get the count of entities that match a given filter
+            public async Task<int> CountAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
+            {
+                if (filter != null)
+                {
+                    return await _dbSet.CountAsync(filter, cancellationToken);
+                }
+                return await _dbSet.CountAsync(cancellationToken);
+            }
+
+            // CreateOneAsync - Create a single entity
+            public async Task<T> CreateOneAsync(T entity, CancellationToken cancellationToken)
+            {
+                await _dbSet.AddAsync(entity, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
+                return entity;
+            }
+
+            // CreateManyAsync - Create multiple entities
+            public async Task<IEnumerable<T>> CreateManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken)
+            {
+                await _dbSet.AddRangeAsync(entities, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
+                return entities;
+            }
         }
 
-        // Example method to find one entity by a filter.
-        //public async Task<T> FindOneAsync(Expression<Func<T, bool>> filter)
-        //{
-        //    using (var connection = _connectionFactory.CreateConnection())
-        //    {
-        //        // Convert filter expression to SQL WHERE clause
-        //        var whereClause = GetSqlWhereClause(filter);
-        //        var query = $"SELECT * FROM {typeof(T).Name} WHERE {whereClause}";
-
-        //        await connection.OpenAsync();
-
-        //        using (var command = new SqlCommand(query, connection))
-        //        {
-        //            // Add parameters to the command based on the entity's property values
-        //            AddParameters(command, new T()); // Or pass an actual entity instance
-
-        //            using (var reader = await command.ExecuteReaderAsync())
-        //            {
-        //                if (await reader.ReadAsync())
-        //                {
-        //                    return MapReaderToEntity(reader);
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    return default(T); // Return default if no result found
-        //}
-    }
 }

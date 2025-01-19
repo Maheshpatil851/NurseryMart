@@ -1,10 +1,12 @@
 ﻿using NurseryMart.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace NurseryMart.IRepository
 {
     public interface IEntity
     {
-        public string? Id { set; get; }
+        [Key]
+        public int Id { set; get; }
         public Trail Trail { set; get; }
     }
 }

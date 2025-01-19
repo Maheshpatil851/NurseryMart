@@ -5,12 +5,12 @@ namespace NurseryMart.IRepository
 {
     public interface IBase<T>
     {
-        Task<long> CountAsync(Expression<Func<T, bool>> filter);
-        Task CreateOneAsync(T entity);
-        Task CreateManyAsync(IEnumerable<T> entities);
-        Task<bool> DeleteOneAsync(Expression<Func<T, bool>> filter);
-        Task<bool> UpdateOneAsync(Expression<Func<T, bool>> filter, T entity);
-        Task<T> FindOneAsync(Expression<Func<T, bool>> filter);
-       
+        Task<T> FindOneAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken);
+        Task<IEnumerable<T>> FindManyAsync(Pagination pagination, Expression<Func<T, bool>> filter, CancellationToken cancellationToken);
+        Task<bool> UpdateOneAsync(T entity, CancellationToken cancellationToken);
+        Task<bool> UpdateManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken);
+        Task<int> CountAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken);
+        Task<T> CreateOneAsync(T entity, CancellationToken cancellationToken);
+        Task<IEnumerable<T>> CreateManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken);
     }
 }
