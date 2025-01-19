@@ -1,18 +1,16 @@
-﻿using NurseryMart.IRepository;
+﻿using Microsoft.EntityFrameworkCore;
+using NurseryMart.IRepository;
 
 namespace NurseryMart.Repositories
 {
     public sealed class RepositoryManager : IRepositoryManager
     {
-        private readonly Lazy<IAuth> _lazyAuthRepository;
-        private readonly Lazy<IOrder> _lazyOrderRepository;
-
-        public RepositoryManager(SqlConnectionFactory database)
+        private readonly NurseryMartDbContext _context;
+        public RepositoryManager(NurseryMartDbContext context)
         {
-            _lazyAuthRepository = new Lazy<IAuth>(() => new AuthRepository(database));
+            _context = context;
         }
         public IOrder OrderRepository => throw new NotImplementedException();
-
-        public IAuth AuthRepository => _lazyAuthRepository.Value;
+        public IAuth AuthRepository => new AuthRepository(_context);
     }
 }

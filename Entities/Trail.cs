@@ -1,22 +1,23 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace NurseryMart.Entities
 {
     public class Trail
     {
-        [BsonElement("created_on")]
-        public DateTimeOffset? CreatedOn { set; get; }
-        [BsonElement("modified_on")]
-        public DateTimeOffset? ModifiedOn { set; get; }
-        [BsonElement("created_by")]
-        public string? CreatedBy { set; get; }
-        [BsonElement("modified_by")]
-        public string? ModifiedBy { set; get; }
-        [BsonElement("is_active")]
-        public bool IsActive { set; get; }
-        [BsonElement("is_marked_as_delete")]
-        public bool IsMarkedAsDelete { set; get; }
-        [BsonElement("last_activity_on")]
-        public DateTimeOffset? LastActiveOn { set; get; }
+        [Key] // Primary Key
+        public int TrailId { get; set; }  // Unique identifier for the Trail
+        public DateTimeOffset? CreatedOn { get; set; }  // Created date
+        public DateTimeOffset? ModifiedOn { get; set; }  // Modified date
+        public string? CreatedBy { get; set; }  // Created by user
+        public string? ModifiedBy { get; set; }  // Modified by user
+        public bool IsActive { get; set; }  // Active status of the record
+        public bool IsMarkedAsDelete { get; set; }  // Flag indicating if the record is marked for deletion
+        public DateTimeOffset? LastActiveOn { get; set; }  // Last active timestamp
+
+        // Navigation property for Authorize (One-to-many)
+        [JsonIgnore]
+        public ICollection<Authorize> Authorize { get; set; }
     }
 }

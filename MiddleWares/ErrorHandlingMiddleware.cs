@@ -53,7 +53,7 @@ namespace NurseryMart.MiddleWares
             {
 
                 case RestException re:
-                    logger.LogError(re, $"SportzFirst Exception");
+                    logger.LogError(re, $"NurseryMart Exception");
                     context.Response.StatusCode = (int)re.Code;
                     if (_env.IsDevelopment())
                     {

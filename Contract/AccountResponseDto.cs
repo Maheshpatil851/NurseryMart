@@ -2,7 +2,7 @@
 {
     public class AccountResponseDto
     {
-        public string? Id { set; get; }
+        public int Id { set; get; }
         public string? Email { get; set; }
         public required string Mobile { set; get; }
         public string? FirstName { set; get; }
