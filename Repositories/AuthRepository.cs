@@ -50,6 +50,12 @@ namespace NurseryMart.Repositories
             return await _context.Authorize.FirstOrDefaultAsync(u => u.UserName == username || u.Email == email);
         }
 
+        public async Task<dynamic> GetUserDetailsById(int id ,CancellationToken cancellationToken)
+        {
+           var user = await FindOneAsync(_ => _.Id == id  ,cancellationToken);
+           return new { user = new { userName = user.UserName, mobile = user.Mobile, user.City, user.Country, user.State, user.Address } };
+        }
+
         public async Task<dynamic> GetUsers(Pagination pagination, CancellationToken cancellationToken)
         {
             // Initialize the query

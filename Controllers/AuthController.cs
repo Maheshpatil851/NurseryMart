@@ -48,5 +48,18 @@ namespace NurseryMart.Controllers
                 return BadRequest(ex.Message);  
             }
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUsers(int id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var user = await _repositoryManager.AuthRepository.GetUserDetailsById(id, cancellationToken);
+                return Ok(user);
+            }
+            catch (RestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

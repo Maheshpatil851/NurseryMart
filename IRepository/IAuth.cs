@@ -8,5 +8,6 @@ namespace NurseryMart.IRepository
     {
         Task<Authorize> CreateUserAsync(AuthorizeDto entity,CancellationToken cancellationToken);
         Task<dynamic> GetUsers(Pagination pagination, CancellationToken cancellationToken);
+        Task<dynamic> GetUserDetailsById(int id, CancellationToken cancellationToken);
     }
 }
