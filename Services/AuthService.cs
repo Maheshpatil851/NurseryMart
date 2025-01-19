@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using NurseryMart.Contract;
 using NurseryMart.Entities;
 using NurseryMart.IRepository;
@@ -15,12 +16,15 @@ namespace NurseryMart.Services
         private readonly IRepositoryManager _repositoryManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
+        private readonly NurseryMartDbContext _context;
 
-        public AuthService(IRepositoryManager repositoryManager,IHttpContextAccessor httpContextAccessor,IConfiguration configuration)
+
+        public AuthService(IRepositoryManager repositoryManager,NurseryMartDbContext context ,IHttpContextAccessor httpContextAccessor,IConfiguration configuration)
         {
             _repositoryManager = repositoryManager;
             _httpContextAccessor = httpContextAccessor;
             _configuration = configuration;
+            _context = context;
         }
 
         public AccountResponseDto Account {  get; set; }
@@ -47,16 +51,12 @@ namespace NurseryMart.Services
 
                     var id = jwtToken.Claims.First(x => x.Type == "AuthId").Value;
 
-                    var user = await _repositoryManager.AuthRepository.FindOneAsync(_ => _.Id == id && _.Trail.IsActive == true && !_.Trail.IsMarkedAsDelete);
+                    var user = await _context.Authorize.Where(_ => _.Id == int.Parse(id) && _.Trail.IsActive && !_.Trail.IsMarkedAsDelete).FirstOrDefaultAsync();
                     if (user == null)
                         throw new RestException(System.Net.HttpStatusCode.NotFound, ErrorConstant.NotFound);
 
                     AccountResponseDto responseUser = null;
                     responseUser.Id = user.Id;
-                    responseUser.FirstName = user.Profile.FirstName;
-                    responseUser.LastName = user.Profile.LastName;
-                    responseUser.DateOfBirth = user.Profile.DateOfBirth;
-                    responseUser.Gender = user.Profile.Gender;
                     responseUser.IsActive = user.Trail.IsActive;
                    
                     _httpContextAccessor.HttpContext.Items["Account"] = responseUser;
@@ -71,21 +71,21 @@ namespace NurseryMart.Services
             }
         }
 
-        public async Task<dynamic> CreateUser(CustomerDTO entity , CancellationToken cancellationToken)
-        {
-            var customer = new Authorize
-            {
-                Email = entity.Email,
-                Password = entity.Password,
-                State = entity.State,
-                Country = entity.Country,
-                City = entity.City,
-                Profile  = new Profile { FirstName = entity.FirstName , LastName = entity.LastName ,Gender = entity.Gender },
-                Trail = new Trail { CreatedOn = DateTimeOffset.UtcNow ,IsActive =true},
-            };
+        //public async Task<dynamic> CreateUser(CustomerDTO entity , CancellationToken cancellationToken)
+        //{
+        //    var customer = new Authorize
+        //    {
+        //        Email = entity.Email,
+        //        Password = entity.Password,
+        //        State = entity.State,
+        //        Country = entity.Country,
+        //        City = entity.City,
+        //        Profile  = new Profile { FirstName = entity.FirstName , LastName = entity.LastName ,Gender = entity.Gender },
+        //        Trail = new Trail { CreatedOn = DateTimeOffset.UtcNow ,IsActive =true},
+        //    };
 
-            await _repositoryManager.AuthRepository.CreateOneAsync(customer);
-            return customer;
-        }
+        //    await _repositoryManager.AuthRepository.CreateOneAsync(customer);
+        //    return customer;
+        //}
     }
 }

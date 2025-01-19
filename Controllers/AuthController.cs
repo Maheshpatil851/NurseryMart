@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using NurseryMart.Contract;
+using NurseryMart.IRepository;
+using NurseryMart.Repositories;
 using NurseryMart.Services.Abstraction;
 
 namespace NurseryMart.Controllers
@@ -11,25 +13,40 @@ namespace NurseryMart.Controllers
     [Route("api/{v:apiVersion}/access/[controller]")]
     [ApiExplorerSettings(GroupName = "v1", IgnoreApi = false)]
     //[EnableCors("nurseryMart-origins")]
-    public class AuthController : BaseController
+    public class AuthController : ControllerBase
     {
-        private readonly IServiceManager _serviceManager;
-        public AuthController(IServiceManager serviceManager)
+        private readonly IRepositoryManager _repositoryManager;
+        public AuthController(IRepositoryManager repositoryManager)
         {
-            _serviceManager = serviceManager;
+            _repositoryManager = repositoryManager;
         }
-        //[HttpPost("login")]
-        //public async Task<IActionResult> Login(LoginDto login, CancellationToken cancellationToken)
-        //{
-        //    var loginRespones = await _serviceManager.AuthService.Login(login, cancellationToken);
-        //    return Ok(loginRespones);
-        //}
-        [HttpPost("create-account")]
-        public async Task<IActionResult> CreateAccount(CustomerDTO accountCreateDto, CancellationToken cancellationToken)
+
+        [HttpPost("create-user")]
+        public async Task<IActionResult> CreateUserAsync(AuthorizeDto entity ,CancellationToken cancellationToken)
         {
-            //_serviceManager.AuthService.Account = Account;
-            var account = await _serviceManager.AuthService.CreateUser(accountCreateDto, cancellationToken);
-            return Ok(account);
+            try
+            {
+                var user = await _repositoryManager.AuthRepository.CreateUserAsync(entity ,cancellationToken);
+                return Ok(user);  // Return created user in response
+            }
+            catch (RestException ex)
+            {
+                return BadRequest(ex.Message);  // Return error if user already exists
+            }
+        }
+
+        [HttpPost()]
+        public async Task<IActionResult> GetUsers(Pagination entity, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var users = await _repositoryManager.AuthRepository.GetUsers(entity, cancellationToken);
+                return Ok(users);  
+            }
+            catch (RestException ex)
+            {
+                return BadRequest(ex.Message);  
+            }
         }
     }
 }

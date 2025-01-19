@@ -7,6 +7,8 @@ using NurseryMart.MiddleWares;
 using NurseryMart.Repositories;
 using NurseryMart.Services.Abstraction;
 using NurseryMart.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,15 +28,11 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
 builder.Services.TryAddEnumerable(
        ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
-builder.Services.AddTransient<SqlConnectionFactory>();
-//builder.Services.AddSingleton(_scrope =>
-//{
-//    var connectionString = builder.Configuration["ConnectionStrings:MongoDb"];
-//    var mongoClient = new MongoClient(connectionString);
-//    return mongoClient.GetDatabase(builder.Configuration["Databases:MongoDb"]);
-//});
-builder.Services.AddSingleton<IServiceManager, ServiceManager>();
-builder.Services.AddSingleton<IRepositoryManager, RepositoryManager>();
+builder.Services.AddDbContext<NurseryMartDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("NurseryMart")));
+
+builder.Services.AddScoped<IAuth, AuthRepository>(); 
+builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 
 var app = builder.Build();
 
@@ -47,7 +45,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthorization();
-app.UseWhen(_ => !_.Request.Path.StartsWithSegments("/api/public"), _app => _app.UseMiddleware<JwtMiddleware>());
+//app.UseWhen(_ => !_.Request.Path.StartsWithSegments("/api/public"), _app => _app.UseMiddleware<JwtMiddleware>());
 app.MapControllers();
 
 app.Run();
