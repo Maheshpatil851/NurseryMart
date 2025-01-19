@@ -4,6 +4,6 @@ namespace NurseryMart.Services.Abstraction
 {
     public interface IBaseService
     {
-       AccountResponseDto Account { get; }
+       AccountResponseDto Account { get; set; }
     }
 }

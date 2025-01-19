@@ -21,18 +21,14 @@ namespace NurseryMart.Repositories
                 _dbSet = context.Set<T>();
             }
 
-            // FindOneAsync - Find a single entity by a given filter (e.g., by Id or other criteria)
             public async Task<T> FindOneAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
             {
                 return await _dbSet.FirstOrDefaultAsync(filter, cancellationToken);
             }
 
-            // FindManyAsync - Find many entities with pagination
             public async Task<IEnumerable<T>> FindManyAsync(Pagination pagination, Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
             {
                 IQueryable<T> query = _dbSet.AsQueryable();
-
-                // Apply filter if provided
                 if (filter != null)
                 {
                     query = query.Where(filter);

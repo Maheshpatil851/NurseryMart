@@ -1,7 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MongoDB.Driver;
 using NurseryMart.IRepository;
 using NurseryMart.MiddleWares;
 using NurseryMart.Repositories;
@@ -31,8 +30,8 @@ builder.Services.TryAddEnumerable(
 builder.Services.AddDbContext<NurseryMartDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("NurseryMart")));
 
-builder.Services.AddScoped<IAuth, AuthRepository>(); 
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
+builder.Services.AddScoped<IServiceManager, ServiceManager>();
 
 var app = builder.Build();
 
@@ -45,7 +44,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthorization();
-//app.UseWhen(_ => !_.Request.Path.StartsWithSegments("/api/public"), _app => _app.UseMiddleware<JwtMiddleware>());
+app.UseWhen(_ => !_.Request.Path.StartsWithSegments("/api/public"), _app => _app.UseMiddleware<JwtMiddleware>());
 app.MapControllers();
 
 app.Run();
