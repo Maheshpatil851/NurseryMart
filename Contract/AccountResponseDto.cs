@@ -9,7 +9,6 @@
         public string? LastName { set; get; }
         public char Gender { set; get; }
         public string? DpUrl { set; get; }
-        public DateTime? DateOfBirth { set; get; }
         public string? Country { set; get; }
         public string? State { set; get; }
         public string? City { set; get; }
