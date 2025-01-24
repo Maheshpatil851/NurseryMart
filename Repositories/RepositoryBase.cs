@@ -26,7 +26,7 @@ namespace NurseryMart.Repositories
                 return await _dbSet.FirstOrDefaultAsync(filter, cancellationToken);
             }
 
-            public async Task<IEnumerable<T>> FindManyAsync(Pagination pagination, Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
+            public async Task<IEnumerable<T>> FindManyAsync(Expression<Func<T, bool>> filter, Pagination pagination, CancellationToken cancellationToken)
             {
                 IQueryable<T> query = _dbSet.AsQueryable();
                 if (filter != null)

@@ -14,8 +14,9 @@ namespace NurseryMart.Repositories
             public DbSet<Category> Category { get; set; }
             public DbSet<Order> Order { get; set; }
             public DbSet<Product> Product { get; set; }
+            public DbSet<OrderDetails> OrderDetails { get; set; }
 
-            protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
             base.OnModelCreating(modelBuilder);
 
@@ -27,9 +28,44 @@ namespace NurseryMart.Repositories
                 .OnDelete(DeleteBehavior.SetNull);  // Optional: If Trail is deleted, set TrailId to null in Authorize (for cascading behavior)
             modelBuilder.Entity<Authorize>()
                .HasKey(c => c.Id);
+
+
+            modelBuilder.Entity<Order>()
+            .HasOne(o => o.Authorize)               // An order has one customer
+            .WithMany(c => c.Orders)                // A customer can have many orders
+            .HasForeignKey(o => o.CustomerId); ;      // CustomerId in Order is the foreign key
+
+            // Configure the foreign key relationship between OrderDetail and Product
+            modelBuilder.Entity<OrderDetails>()
+                .HasOne(od => od.Product)               // An order detail has one product
+                .WithMany()                             // A product can appear in many order details
+                .HasForeignKey(od => od.ProductId);    // ProductId in OrderDetail is the foreign key
+
+            // Configure the foreign key relationship between OrderDetail and Order
+            modelBuilder.Entity<Order>()
+               .HasOne(o => o.Trail)
+               .WithMany(t => t.Orders)
+               .HasForeignKey(o => o.TrailId)
+               .OnDelete(DeleteBehavior.Restrict);  // Prevent cascading delete
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Trail)
+                .WithMany(t => t.Products)
+                .HasForeignKey(p => p.TrailId)
+                .OnDelete(DeleteBehavior.Restrict);  // Prevent cascading delete
+
+            modelBuilder.Entity<OrderDetails>()
+                .HasOne(od => od.Trail)
+                .WithMany(t => t.OrderDetails)
+                .HasForeignKey(od => od.TrailId)
+                .OnDelete(DeleteBehavior.Restrict);  // Prevent cascading delete
+
             modelBuilder.Entity<Category>()
-               .HasKey(c => c.Id);
+                .HasOne(c => c.Trail)
+                .WithMany(t => t.Categories)
+                .HasForeignKey(c => c.TrailId)
+                .OnDelete(DeleteBehavior.Restrict);  // Prevent cascading delete
 
         }
-        }
+     }
 }

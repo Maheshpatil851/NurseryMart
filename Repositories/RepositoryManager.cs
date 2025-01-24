@@ -10,7 +10,9 @@ namespace NurseryMart.Repositories
         {
             _context = context;
         }
-        public IOrder OrderRepository => throw new NotImplementedException();
+        public IOrder OrderRepository => new OrderRepository(_context);
         public IAuth AuthRepository => new AuthRepository(_context);
+        public ICategory CategoryRepository => new CategoryRepository(_context);
+        public IProduct ProductRepository => new ProductRepository(_context);
     }
 }

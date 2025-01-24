@@ -6,7 +6,7 @@ namespace NurseryMart.IRepository
     public interface IBase<T>
     {
         Task<T> FindOneAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken);
-        Task<IEnumerable<T>> FindManyAsync(Pagination pagination, Expression<Func<T, bool>> filter, CancellationToken cancellationToken);
+        Task<IEnumerable<T>> FindManyAsync( Expression<Func<T, bool>> filter, Pagination pagination, CancellationToken cancellationToken);
         Task<bool> UpdateOneAsync(T entity, CancellationToken cancellationToken);
         Task<bool> UpdateManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken);
         Task<int> CountAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken);

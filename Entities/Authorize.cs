@@ -32,7 +32,9 @@ namespace NurseryMart.Entities
         public string? Pincode { get; set; }  // Field for Pincode
                                               // Foreign Key to Trail (One-to-many relationship)
         public int? TrailId { get; set; }
-        [JsonIgnore]// Nullable if you want to allow Authorize without a Trail reference
+        [JsonIgnore]
         public Trail Trail { get; set; }  // Navigation property to Trail
+        [JsonIgnore]
+        public ICollection<Order> Orders { get; set; }
     }
 }
