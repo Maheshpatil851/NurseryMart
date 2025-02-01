@@ -19,6 +19,7 @@ namespace NurseryMart.Services
         public async Task<dynamic> Create(ProductCreateDto entity ,CancellationToken cancellationToken)
         {
             if (entity == null) throw new RestException(System.Net.HttpStatusCode.BadRequest,ErrorConstant.InvalidInput);
+            var productList = new List<Product>();
             var newProduct = new Product
             {
                 Name = entity.Name,
@@ -35,6 +36,7 @@ namespace NurseryMart.Services
                 ImageUrl = entity.ImageUrl,
                 Trail = new Trail { IsActive = true, CreatedBy = Account.Id, CreatedOn = DateTimeOffset.UtcNow }
             };
+            productList.Add(newProduct);
             await _repositoryManager.ProductRepository.CreateOneAsync(newProduct ,cancellationToken);
             return new ResponseDto(newProduct,1,"product added successfully","success");
         }

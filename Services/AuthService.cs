@@ -35,7 +35,7 @@ namespace NurseryMart.Services
             try
             {
 
-                if (!string.IsNullOrEmpty(token))
+                if (!string.IsNullOrEmpty(token) && token != "null")
                 {
                     var tokenHandler = new JwtSecurityTokenHandler();
 

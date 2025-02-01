@@ -11,11 +11,11 @@ namespace NurseryMart.Controllers
     [Route("api/{v:apiVersion}/[controller]")]
     [ApiExplorerSettings(GroupName = "v1", IgnoreApi = false)]
     //[EnableCors("nurseryMart-origins")]
-    public class CateoryController :BaseController
+    public class CategoryController :BaseController
     {
 
         private readonly IServiceManager _servicemanager;
-        public CateoryController(IServiceManager serviceManager)
+        public CategoryController(IServiceManager serviceManager)
         {
             _servicemanager = serviceManager;
         }

@@ -17,7 +17,7 @@ namespace NurseryMart.Entities
         [Column("email")]
         public string Email { get; set; }  // Field for Email
         [Column("salt")]
-        public string? Salt { get; set; }
+        public string? Salt { get; set; } 
         [Column("passsword")]
         public string? Password { get; set; }  // Field for Password (ensure you hash it properly for security)
         [Column("address")]
