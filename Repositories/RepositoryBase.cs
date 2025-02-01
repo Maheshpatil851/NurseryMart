@@ -26,7 +26,7 @@ namespace NurseryMart.Repositories
                 return await _dbSet.FirstOrDefaultAsync(filter, cancellationToken);
             }
 
-            public async Task<IEnumerable<T>> FindManyAsync(Pagination pagination, Expression<Func<T, bool>> filter, CancellationToken cancellationToken)
+            public async Task<IEnumerable<T>> FindManyAsync(Expression<Func<T, bool>> filter, Pagination pagination, CancellationToken cancellationToken)
             {
                 IQueryable<T> query = _dbSet.AsQueryable();
                 if (filter != null)
@@ -81,16 +81,27 @@ namespace NurseryMart.Repositories
                 return await _dbSet.CountAsync(cancellationToken);
             }
 
-            // CreateOneAsync - Create a single entity
-            public async Task<T> CreateOneAsync(T entity, CancellationToken cancellationToken)
+        // CreateOneAsync - Create a single entity
+        public async Task CreateOneAsync(T entity, CancellationToken cancellationToken)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
             {
-                await _dbSet.AddAsync(entity, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
-                return entity;
+                try
+                {
+                    await _dbSet.AddAsync(entity, cancellationToken);
+                    await _context.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);  // Commit the transaction
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken);  // Rollback on failure
+                    throw;
+                }
             }
+        }
 
-            // CreateManyAsync - Create multiple entities
-            public async Task<IEnumerable<T>> CreateManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken)
+        // CreateManyAsync - Create multiple entities
+        public async Task<IEnumerable<T>> CreateManyAsync(IEnumerable<T> entities, CancellationToken cancellationToken)
             {
                 await _dbSet.AddRangeAsync(entities, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
