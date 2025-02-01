@@ -4,5 +4,7 @@
     {
         IOrder OrderRepository { get; }
         IAuth AuthRepository { get; }
+        ICategory CategoryRepository { get; }
+        IProduct ProductRepository { get; }
     }
 }

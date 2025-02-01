@@ -17,7 +17,7 @@ namespace NurseryMart.Entities
         [Column("email")]
         public string Email { get; set; }  // Field for Email
         [Column("salt")]
-        public string? Salt { get; set; }
+        public string? Salt { get; set; } 
         [Column("passsword")]
         public string? Password { get; set; }  // Field for Password (ensure you hash it properly for security)
         [Column("address")]
@@ -32,7 +32,9 @@ namespace NurseryMart.Entities
         public string? Pincode { get; set; }  // Field for Pincode
                                               // Foreign Key to Trail (One-to-many relationship)
         public int? TrailId { get; set; }
-        [JsonIgnore]// Nullable if you want to allow Authorize without a Trail reference
+        [JsonIgnore]
         public Trail Trail { get; set; }  // Navigation property to Trail
+        [JsonIgnore]
+        public ICollection<Order> Orders { get; set; }
     }
 }
