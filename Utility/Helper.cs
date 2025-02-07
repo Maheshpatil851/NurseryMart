@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Linq.Expressions;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace NurseryMart.Utility
@@ -107,5 +108,14 @@ namespace NurseryMart.Utility
                 }
             }
         }
+        public static Expression<Func<T, bool>> AndAlso<T>(this Expression<Func<T, bool>> expr1, Expression<Func<T, bool>> expr2)
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            var combinedBody = Expression.AndAlso(expr1.Body, expr2.Body);
+            return Expression.Lambda<Func<T, bool>>(combinedBody, parameter);
+        }
+
+
+
     }
 }

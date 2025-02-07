@@ -35,9 +35,12 @@ namespace NurseryMart.Services
         public async Task<dynamic> GetCategories(Pagination entity, CancellationToken cancellationToken)
         {
             if (entity == null) throw new RestException(System.Net.HttpStatusCode.BadRequest, ErrorConstant.InvalidInput);
-            var categories = await _repositoryManager.CategoryRepository.FindManyAsync(_ => _.Trail.IsActive, entity, cancellationToken);
+            var categories = await _repositoryManager.CategoryRepository.FindManyAsync(_ => true, entity, cancellationToken);
             return new ResponseDto(categories, 1, "category added successfully", "success");
         }
+
+
+
 
     }
 }
