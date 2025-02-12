@@ -37,5 +37,31 @@ namespace NurseryMart.Controllers
             return Ok(data);
         }
 
+        [HttpPost("search")]
+        [AuthorizeFilter]
+        public async Task<IActionResult> Create(SearchProductDto entity, CancellationToken cancellationToken)
+        {
+            _servicemanager.ProductService.Account = Account;
+            var data = await _servicemanager.ProductService.Search(entity, cancellationToken);
+            return Ok(data);
+        }
+
+        [HttpPut]
+        [AuthorizeFilter]
+        public async Task<IActionResult> Create(UpdateProductDto entity, CancellationToken cancellationToken)
+        {
+            _servicemanager.ProductService.Account = Account;
+            var data = await _servicemanager.ProductService.Update(entity, cancellationToken);
+            return Ok(data);
+        }
+        [HttpGet("get-by/{id}")]
+        [AuthorizeFilter]
+        public async Task<IActionResult> GetById( string id, CancellationToken cancellationToken)
+        {
+            _servicemanager.ProductService.Account = Account;
+            var data = await _servicemanager.ProductService.GetById(int.Parse(id), cancellationToken);
+            return Ok(data);
+        }
+
     }
 }

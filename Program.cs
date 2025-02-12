@@ -40,6 +40,9 @@ builder.Services.AddDbContext<NurseryMartDbContext>(options =>
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 builder.Services.AddScoped<IServiceManager, ServiceManager>();
 
+builder.Logging.SetMinimumLevel(LogLevel.Information); // Make sure to set this
+builder.Logging.AddConsole();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -52,6 +55,7 @@ app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseAuthorization();
 app.UseWhen(_ => !_.Request.Path.StartsWithSegments("/api/public"), _app => _app.UseMiddleware<JwtMiddleware>());
+app.UseMiddleware<LoggingMiddleWare>();
 app.MapControllers();
 
 app.Run();
