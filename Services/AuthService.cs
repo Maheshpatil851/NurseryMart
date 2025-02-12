@@ -81,6 +81,15 @@ namespace NurseryMart.Services
             return new ResponseDto(new {accesstoken = GenerateLoginToken(account.Email,Convert.ToString(account.Id),tokenExpiry) , Account = responseUser },1,"user Fetched successfully","success");
         }
 
+        public async Task<dynamic> CreateNewPassword(CreateNewPasswordDto entity , CancellationToken cancellationToken)
+        {
+           var user = await _repositoryManager.AuthRepository.FindOneAsync(u => u.UserName == entity.UserName || u.Email == entity.Email, cancellationToken);
+           if(user == null) throw new RestException(System.Net.HttpStatusCode.NotFound,ErrorConstant.NotFound);
+            user.Password = Helper.HashAnything(entity.Password,Convert.FromBase64String(user.Salt));
+            await _repositoryManager.AuthRepository.UpdateOneAsync(user, cancellationToken);
+            return new ResponseDto(true, 1, "password fetched successfully", "success");
+        }
+
         private string GenerateLoginToken(string email,string id ,DateTime tokenExpiry)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
