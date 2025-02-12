@@ -1,5 +1,6 @@
 ﻿using NurseryMart.Contract;
 using NurseryMart.Entities;
+using System.Threading.Tasks;
 
 namespace NurseryMart.Services.Abstraction
 {
@@ -10,5 +11,6 @@ namespace NurseryMart.Services.Abstraction
         Task<dynamic> GetUsers(Pagination pagination, CancellationToken cancellationToken);
         Task<dynamic> GetUserDetailsById(int id, CancellationToken cancellationToken);
         Task<dynamic> Login(LoginDto entity, CancellationToken cancellationToken);
+        Task<dynamic> CreateNewPassword(CreateNewPasswordDto entity, CancellationToken cancellationToken);
     }
 }

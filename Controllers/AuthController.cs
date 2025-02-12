@@ -82,5 +82,20 @@ namespace NurseryMart.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("create-new-password")]
+        public async Task<IActionResult> CreateNewPassword(CreateNewPasswordDto entity, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _serviceManager.AuthService.Account = Account;
+                var user = await _serviceManager.AuthService.CreateNewPassword(entity, cancellationToken);
+                return Ok(user);
+            }
+            catch (RestException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
