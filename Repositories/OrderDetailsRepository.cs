@@ -3,12 +3,13 @@ using NurseryMart.IRepository;
 
 namespace NurseryMart.Repositories
 {
-    internal sealed class OrderRepository : RepositoryBase<Order> ,IOrder
+    internal sealed class OrderDetailsRepository :  RepositoryBase<OrderDetails> ,IOrderDetails
     {
         private readonly NurseryMartDbContext _context;
-        public OrderRepository(NurseryMartDbContext context) : base(context) 
+        public OrderDetailsRepository(NurseryMartDbContext context) : base(context) 
         {
             _context = context;
+
         }
     }
 }

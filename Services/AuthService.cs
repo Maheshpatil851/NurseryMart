@@ -151,14 +151,9 @@ namespace NurseryMart.Services
 
         public async Task<dynamic> GetUsers(Pagination pagination, CancellationToken cancellationToken)
         {
-            // Initialize the query
             IQueryable<Authorize> query = _context.Authorize;
-
-            // Apply sorting if a SortColumn is provided
             if (!string.IsNullOrEmpty(pagination.SortColumn))
             {
-                // This is a simple example of dynamic sorting.
-                // You might need to extend this to support more columns and sort directions
                 if (pagination.SortDesc)
                 {
                     query = query.OrderByDescending(x => EF.Property<object>(x, pagination.SortColumn));
@@ -169,26 +164,17 @@ namespace NurseryMart.Services
                 }
             }
 
-            // Apply pagination if SkipPagination is false
             if (!pagination.SkipPagination)
             {
-                // Validate PageNumber and PageSize
                 if (pagination.PageNumber <= 0) pagination.PageNumber = 1;
-                if (pagination.PageSize <= 0) pagination.PageSize = 10; // You can set a default if not provided
-
-                // Apply Skip and Take based on the page number and size
+                if (pagination.PageSize <= 0) pagination.PageSize = 10; 
                 query = query.Skip((pagination.PageNumber - 1) * pagination.PageSize)
                              .Take(pagination.PageSize);
             }
 
-            // Fetch the users asynchronously
             var users = await query.ToListAsync(cancellationToken);
-
-            // Get the total count of records for pagination metadata
             var totalCount = await _context.Authorize.CountAsync(cancellationToken);
             var totalPages = (int)Math.Ceiling((double)totalCount / pagination.PageSize);
-
-            // Return the result with pagination metadata
             return new
             {
                 Users = users,

@@ -8,6 +8,9 @@ using NurseryMart.Services.Abstraction;
 using NurseryMart.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using NurseryMart.Communication;
+using NurseryMart.ExternalServices;
+using NurseryMart.FileManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +22,9 @@ builder.Services.AddCors(options =>
                .AllowAnyMethod()
                .AllowAnyHeader());
 });
-
+//builder.Services.AddHttpClient();
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -36,7 +40,10 @@ builder.Services.TryAddEnumerable(
        ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
 builder.Services.AddDbContext<NurseryMartDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("NurseryMart")));
-
+builder.Services.AddScoped<IS3Provider, S3Provider>();
+builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<ICommunicationService, CommunicationService>();
+builder.Services.AddScoped<IWhatsappProvider, WhatsAppProvider>();
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 builder.Services.AddScoped<IServiceManager, ServiceManager>();
 

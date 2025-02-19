@@ -14,5 +14,7 @@ namespace NurseryMart.Repositories
         public IAuth AuthRepository => new AuthRepository(_context);
         public ICategory CategoryRepository => new CategoryRepository(_context);
         public IProduct ProductRepository => new ProductRepository(_context);
+        public IOrderDetails OrderDetailsRepository => new OrderDetailsRepository(_context);
+
     }
 }
