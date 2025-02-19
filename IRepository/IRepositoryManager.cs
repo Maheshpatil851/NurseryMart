@@ -6,5 +6,6 @@
         IAuth AuthRepository { get; }
         ICategory CategoryRepository { get; }
         IProduct ProductRepository { get; }
+        IOrderDetails OrderDetailsRepository { get; }
     }
 }

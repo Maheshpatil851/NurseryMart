@@ -1,4 +1,6 @@
-﻿using NurseryMart.IRepository;
+﻿using NurseryMart.Communication;
+using NurseryMart.FileManagement;
+using NurseryMart.IRepository;
 using NurseryMart.Repositories;
 using NurseryMart.Services.Abstraction;
 
@@ -11,12 +13,13 @@ namespace NurseryMart.Services
         private readonly Lazy<IProductService> _lazyProductService;
         private readonly Lazy<IOrderService> _lazyOrderService;
         private readonly Lazy<ICategoryService> _lazyCategoryService;
-        public ServiceManager(IRepositoryManager repositoryManager,NurseryMartDbContext context, IHttpContextAccessor httpContextAccessor,IConfiguration configuration)
+
+        public ServiceManager(IRepositoryManager repositoryManager,NurseryMartDbContext context, IHttpContextAccessor httpContextAccessor,IConfiguration configuration ,ICommunicationService  communicationService,IFileService fileService)
         {
             _lazyAuthService = new Lazy<IAuthService>(() => new AuthService(repositoryManager,context, httpContextAccessor, configuration));
             _lazyDashBoardService = new Lazy<IDashBoardService>(() => new DashBoardService(repositoryManager));
             _lazyProductService = new Lazy<IProductService>(() => new ProductService(repositoryManager));
-            _lazyOrderService = new Lazy<IOrderService>(() => new OrderService(repositoryManager));
+            _lazyOrderService = new Lazy<IOrderService>(() => new OrderService(repositoryManager,communicationService,configuration,fileService));
             _lazyCategoryService = new Lazy<ICategoryService>(() => new CategoryService(repositoryManager));
         }
 
